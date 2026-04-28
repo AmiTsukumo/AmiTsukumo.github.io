@@ -421,11 +421,20 @@
     }
 
     .sidecard {
-      background: #17191e;
+      background: var(--panel);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       overflow: hidden;
+    }
+
+    .right-rail {
+      display: grid;
+      gap: 18px;
+      align-self: start;
+      position: sticky;
+      top: 22px;
+      max-height: calc(100vh - 86px);
     }
 
     .sidecard h2 {
@@ -657,7 +666,7 @@
             </div>
           </article>
 
-          <div style="display:grid; gap:18px;">
+          <div class="right-rail">
             <aside class="sidecard">
               <h2>On this page</h2>
               <div class="toc" id="toc">
