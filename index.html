@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dev Wiki</title>
+  <meta name="color-scheme" content="dark light" />
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #0e0f12;
+      --panel: #16181d;
+      --panel-2: #111317;
+      --text: #e7e7e7;
+      --muted: #a0a3aa;
+      --border: rgba(255, 255, 255, 0.08);
+      --accent: #d0d0d0;
+      --accent-2: #8f8f8f;
+      --hover: rgba(255, 255, 255, 0.06);
+      --code-bg: #0c0d10;
+      --shadow: 0 18px 40px rgba(0, 0, 0, 0.48);
+      --radius: 18px;
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #0e0f12;
+        --panel: #16181d;
+        --panel-2: #111317;
+        --text: #e7e7e7;
+        --muted: #a0a3aa;
+        --border: rgba(255, 255, 255, 0.08);
+        --accent: #d0d0d0;
+        --accent-2: #8f8f8f;
+        --hover: rgba(255, 255, 255, 0.06);
+        --code-bg: #0c0d10;
+        --shadow: 0 18px 40px rgba(0, 0, 0, 0.48);
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow: hidden;
+    }
+
+    a { color: #d6d6d6; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .app {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      height: 100vh;
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 0;
+      border-right: 1px solid var(--border);
+      background: #121419;
+      backdrop-filter: blur(10px);
+    }
+
+    .sidebar-header {
+      padding: 18px 16px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: #2a2d34;
+      color: white;
+      font-weight: 800;
+      box-shadow: var(--shadow);
+      flex: 0 0 auto;
+    }
+
+    .brand-text {
+      min-width: 0;
+    }
+
+    .brand-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      margin: 0;
+      line-height: 1.2;
+    }
+
+    .brand-subtitle {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .search-wrap {
+      position: relative;
+    }
+
+    .search {
+      width: 100%;
+      padding: 12px 14px 12px 40px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #17191e;
+      color: var(--text);
+      outline: none;
+      font-size: 0.95rem;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+    }
+
+    .search::placeholder { color: var(--muted); }
+
+    .search-icon {
+      position: absolute;
+      left: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+      font-size: 0.95rem;
+    }
+
+    .sidebar-tools {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .tool {
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.015);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: 0.15s ease;
+    }
+
+    .tool:hover {
+      transform: translateY(-1px);
+      background: var(--hover);
+      color: var(--text);
+    }
+
+    .sidebar-body {
+      overflow: auto;
+      padding: 12px 10px 16px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .section {
+      margin: 10px 0 14px;
+    }
+
+    .sidebar-body, .article, .stage {
+      min-height: 0;
+    }
+
+    .section-title {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      margin: 0 0 8px;
+      padding: 8px 10px;
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      background: linear-gradient(180deg, rgba(0,0,0,0.12), transparent);
+      backdrop-filter: blur(4px);
+    }
+
+    .page-link {
+      display: block;
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: var(--text);
+      text-align: left;
+      border-radius: 12px;
+      padding: 9px 10px;
+      margin: 2px 0;
+      cursor: pointer;
+      transition: 0.15s ease;
+      line-height: 1.25;
+      font-size: 0.94rem;
+    }
+
+    .page-link:hover {
+      background: var(--hover);
+    }
+
+    .page-link.active {
+      background: rgba(255,255,255,0.06);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.10);
+    }
+
+    .page-link small {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .content {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.015);
+      backdrop-filter: blur(10px);
+    }
+
+    .breadcrumbs {
+      min-width: 0;
+    }
+
+    .breadcrumbs .eyebrow {
+      margin: 0 0 4px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .breadcrumbs h1 {
+      margin: 0;
+      font-size: clamp(1.4rem, 2.2vw, 2.2rem);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+
+    .meta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .pill {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.015);
+      color: var(--muted);
+      font-size: 0.8rem;
+      white-space: nowrap;
+    }
+
+    .stage {
+      overflow: auto;
+      padding: 22px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 280px;
+      gap: 18px;
+      align-items: start;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .article {
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent 20%), var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 26px 28px;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .article.loading {
+      opacity: 0.7;
+    }
+
+    .article-content {
+      max-width: 900px;
+      line-height: 1.7;
+      font-size: 1rem;
+    }
+
+    .article-content h1,
+    .article-content h2,
+    .article-content h3,
+    .article-content h4 {
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+      margin-top: 1.5em;
+      margin-bottom: 0.45em;
+    }
+
+    .article-content h1:first-child,
+    .article-content h2:first-child {
+      margin-top: 0;
+    }
+
+    .article-content p,
+    .article-content ul,
+    .article-content ol,
+    .article-content pre,
+    .article-content blockquote,
+    .article-content table {
+      margin: 0 0 1em;
+    }
+
+    .article-content ul,
+    .article-content ol {
+      padding-left: 1.4em;
+    }
+
+    .article-content code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.95em;
+      background: var(--code-bg);
+      padding: 0.15em 0.35em;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+
+    .article-content pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      overflow: auto;
+    }
+
+    .article-content pre code {
+      background: none;
+      border: 0;
+      padding: 0;
+      font-size: 0.92rem;
+      line-height: 1.6;
+      display: block;
+      white-space: pre;
+    }
+
+    .article-content blockquote {
+      border-left: 4px solid #7a7a7a;
+      padding: 0.25em 0 0.25em 1em;
+      color: var(--muted);
+      background: rgba(255,255,255,0.03);
+      border-radius: 0 12px 12px 0;
+    }
+
+    .article-content table {
+      border-collapse: collapse;
+      width: 100%;
+      overflow: hidden;
+      display: block;
+    }
+
+    .article-content th,
+    .article-content td {
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .article-content th {
+      background: rgba(255,255,255,0.03);
+    }
+
+    .article-content img {
+      max-width: 100%;
+      border-radius: 14px;
+    }
+
+    .article-content hr {
+      border: 0;
+      border-top: 1px solid var(--border);
+      margin: 1.5em 0;
+    }
+
+    .article-content .wiki-link {
+      font-weight: 600;
+      border-bottom: 1px dashed rgba(255,255,255,0.22);
+    }
+
+    .article-content .missing-link {
+      color: #d46a6a;
+      border-bottom: 1px dashed rgba(212,212,212,0.35);
+      cursor: help;
+    }
+
+    .sidecard {
+      background: #17191e;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .sidecard h2 {
+      margin: 0;
+      padding: 14px 16px;
+      font-size: 0.86rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .toc, .backlinks {
+      padding: 8px;
+      max-height: 340px;
+      overflow: auto;
+    }
+
+    .toc button,
+    .backlinks button {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: var(--text);
+      text-align: left;
+      padding: 9px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.92rem;
+      line-height: 1.25;
+      transition: 0.15s ease;
+    }
+
+    .toc button:hover,
+    .backlinks button:hover {
+      background: var(--hover);
+    }
+
+    .toc .level-3 { padding-left: 22px; color: var(--muted); }
+    .toc .level-4 { padding-left: 34px; color: var(--muted); }
+    .toc .empty,
+    .backlinks .empty,
+    .search-empty {
+      color: var(--muted);
+      padding: 14px 10px;
+      font-size: 0.94rem;
+    }
+
+    .status {
+      position: fixed;
+      left: 18px;
+      bottom: 18px;
+      background: rgba(0,0,0,0.35);
+      color: white;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: var(--shadow);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(8px);
+      transition: 0.2s ease;
+    }
+
+    .status.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .error {
+      color: #ffb3b3;
+      background: rgba(255, 78, 78, 0.08);
+      border: 1px solid rgba(255, 78, 78, 0.18);
+      padding: 14px 16px;
+      border-radius: 14px;
+      margin-bottom: 14px;
+    }
+
+    .skeleton {
+      display: grid;
+      gap: 10px;
+    }
+
+    .skeleton-line {
+      height: 16px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.14), rgba(255,255,255,0.06));
+      background-size: 200% 100%;
+      animation: shimmer 1.3s infinite linear;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    @media (max-width: 1100px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .sidecard {
+        display: none;
+      }
+    }
+
+    @media (max-width: 860px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: min(92vw, 360px);
+        transform: translateX(-102%);
+        transition: transform 0.2s ease;
+        z-index: 20;
+        box-shadow: 30px 0 50px rgba(0,0,0,0.35);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .content {
+        grid-template-rows: auto 1fr;
+      }
+
+      .topbar {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .stage {
+        padding: 16px;
+      }
+
+      .menu-btn {
+        display: inline-flex;
+      }
+    }
+
+    .menu-btn {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #17191e;
+      color: var(--text);
+      cursor: pointer;
+      flex: 0 0 auto;
+    }
+
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 15;
+    }
+
+    .overlay.show {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay" id="overlay"></div>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <div class="brand-mark">W</div>
+          <div class="brand-text">
+            <p class="brand-title">Dev Wiki</p>
+            <p class="brand-subtitle">Static markdown knowledge base</p>
+          </div>
+        </div>
+
+        <div class="search-wrap">
+          <span class="search-icon">⌕</span>
+          <input id="search" class="search" type="search" placeholder="Search pages or text..." autocomplete="off" />
+        </div>
+
+        <div class="sidebar-tools">
+          <button class="tool" id="clearSearch">Clear</button>
+          <button class="tool" id="openHome">Home</button>
+          <button class="tool" id="toggleSections">Sections</button>
+        </div>
+      </div>
+
+      <div class="sidebar-body" id="sidebarBody">
+        <div class="section" id="sidebarSections">
+          <div class="search-empty">Loading index.json…</div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="topbar">
+        <button class="menu-btn" id="menuBtn" aria-label="Open sidebar">☰</button>
+        <div class="breadcrumbs">
+          <p class="eyebrow">Wiki article</p>
+          <h1 id="pageTitle">Loading…</h1>
+        </div>
+        <div class="meta">
+          <span class="pill" id="pageFile">—</span>
+          <span class="pill" id="pageCount">0 pages</span>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="grid">
+          <article class="article loading" id="article">
+            <div class="article-content" id="articleContent">
+              <div class="skeleton">
+                <div class="skeleton-line" style="width: 45%"></div>
+                <div class="skeleton-line" style="width: 80%"></div>
+                <div class="skeleton-line" style="width: 68%"></div>
+                <div class="skeleton-line" style="width: 91%"></div>
+                <div class="skeleton-line" style="width: 74%"></div>
+              </div>
+            </div>
+          </article>
+
+          <div style="display:grid; gap:18px;">
+            <aside class="sidecard">
+              <h2>On this page</h2>
+              <div class="toc" id="toc">
+                <div class="empty">No article loaded yet.</div>
+              </div>
+            </aside>
+
+            <aside class="sidecard">
+              <h2>Backlinks</h2>
+              <div class="backlinks" id="backlinks">
+                <div class="empty">No backlinks yet.</div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="status" id="status"></div>
+
+  <script>
+    const state = {
+      files: [],
+      pages: [],
+      pageMap: new Map(),
+      activeFile: null,
+      sidebarCollapsedSections: false,
+      searchQuery: ''
+    };
+
+    const els = {
+      sidebar: document.getElementById('sidebar'),
+      overlay: document.getElementById('overlay'),
+      menuBtn: document.getElementById('menuBtn'),
+      search: document.getElementById('search'),
+      clearSearch: document.getElementById('clearSearch'),
+      openHome: document.getElementById('openHome'),
+      toggleSections: document.getElementById('toggleSections'),
+      sidebarSections: document.getElementById('sidebarSections'),
+      pageTitle: document.getElementById('pageTitle'),
+      pageFile: document.getElementById('pageFile'),
+      pageCount: document.getElementById('pageCount'),
+      article: document.getElementById('article'),
+      articleContent: document.getElementById('articleContent'),
+      toc: document.getElementById('toc'),
+      backlinks: document.getElementById('backlinks'),
+      status: document.getElementById('status')
+    };
+
+    marked.setOptions({
+      gfm: true,
+      breaks: false,
+      mangle: false,
+      headerIds: true,
+      smartLists: true,
+      smartypants: false
+    });
+
+    function showStatus(message, ms = 1400) {
+      els.status.textContent = message;
+      els.status.classList.add('show');
+      window.clearTimeout(showStatus._timer);
+      showStatus._timer = window.setTimeout(() => {
+        els.status.classList.remove('show');
+      }, ms);
+    }
+
+    function stripPrefix(file) {
+      return file
+        .replace(/^\d+[_-]?/, '')
+        .replace(/\.md$/i, '')
+        .replace(/_/g, ' ')
+        .trim();
+    }
+
+    function pageNumber(file) {
+      const match = file.match(/^(\d+)/);
+      return match ? Number(match[1]) : 9999;
+    }
+
+    function sectionName(n) {
+      if (n <= 9) return 'Getting Started';
+      if (n <= 19) return 'Editor Basics';
+      if (n <= 29) return 'Block Editor';
+      if (n <= 39) return 'Execution & Runtime';
+      if (n <= 49) return 'Animation & Graphs';
+      if (n <= 59) return 'Game Systems';
+      if (n <= 69) return 'Tools & Panels';
+      return 'Advanced Topics';
+    }
+
+    function fileToTitle(file) {
+      return stripPrefix(file);
+    }
+
+    function normalizeHeading(text) {
+      return text
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-');
+    }
+
+    function encodeHash(file) {
+      return '#' + encodeURIComponent(file);
+    }
+
+    function decodeHash() {
+      const h = location.hash.replace(/^#/, '');
+      return h ? decodeURIComponent(h) : null;
+    }
+
+    function setActiveSidebarItem(file) {
+      document.querySelectorAll('.page-link').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.file === file);
+      });
+    }
+
+    function openSidebar() {
+      els.sidebar.classList.add('open');
+      els.overlay.classList.add('show');
+    }
+
+    function closeSidebar() {
+      els.sidebar.classList.remove('open');
+      els.overlay.classList.remove('show');
+    }
+
+    function getSectionGroups(files) {
+      const groups = new Map();
+      const orderedSections = [
+        'Getting Started',
+        'Editor Basics',
+        'Block Editor',
+        'Execution & Runtime',
+        'Animation & Graphs',
+        'Game Systems',
+        'Tools & Panels',
+        'Advanced Topics'
+      ];
+      for (const name of orderedSections) groups.set(name, []);
+
+      for (const file of files) {
+        const n = pageNumber(file);
+        const section = sectionName(n);
+        if (!groups.has(section)) groups.set(section, []);
+        groups.get(section).push(file);
+      }
+
+      return groups;
+    }
+
+    function renderSidebar(files, query = '') {
+      const lower = query.trim().toLowerCase();
+      const filtered = lower
+        ? state.pages.filter(p => {
+            const haystack = [p.file, p.title, p.content].join('\n').toLowerCase();
+            return haystack.includes(lower);
+          }).map(p => p.file)
+        : files.slice();
+
+      const groups = getSectionGroups(filtered);
+      const wrapper = document.createDocumentFragment();
+      let foundAny = false;
+
+      for (const [section, sectionFiles] of groups.entries()) {
+        if (!sectionFiles.length) continue;
+        foundAny = true;
+
+        const sectionEl = document.createElement('div');
+        sectionEl.className = 'section';
+
+        const title = document.createElement('div');
+        title.className = 'section-title';
+        title.textContent = section;
+        sectionEl.appendChild(title);
+
+        for (const file of sectionFiles.sort((a, b) => pageNumber(a) - pageNumber(b) || a.localeCompare(b))) {
+          const page = state.pageMap.get(file) || { title: fileToTitle(file), file };
+          const btn = document.createElement('button');
+          btn.className = 'page-link';
+          btn.dataset.file = file;
+          btn.innerHTML = `${escapeHtml(page.title)}<small>${escapeHtml(file)}</small>`;
+          btn.addEventListener('click', () => {
+            location.hash = encodeURIComponent(file);
+            closeSidebar();
+          });
+          sectionEl.appendChild(btn);
+        }
+
+        wrapper.appendChild(sectionEl);
+      }
+
+      els.sidebarSections.innerHTML = '';
+      if (!foundAny) {
+        const empty = document.createElement('div');
+        empty.className = 'search-empty';
+        empty.textContent = query.trim() ? `No pages matched “${query.trim()}”.` : 'No markdown pages found.';
+        els.sidebarSections.appendChild(empty);
+        return;
+      }
+
+      els.sidebarSections.appendChild(wrapper);
+      setActiveSidebarItem(state.activeFile);
+    }
+
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function extractHeadingsFromHtml(html) {
+      const container = document.createElement('div');
+      container.innerHTML = html;
+      const headings = [...container.querySelectorAll('h1, h2, h3, h4')].map((h, idx) => {
+        const level = Number(h.tagName.slice(1));
+        const text = h.textContent.trim();
+        if (!h.id) h.id = `${normalizeHeading(text)}-${idx}`;
+        return { level, text, id: h.id };
+      });
+      return { html: container.innerHTML, headings };
+    }
+
+    function resolveWikiLinks(md, currentFile) {
+      return md.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, targetRaw, labelRaw) => {
+        const target = targetRaw.trim();
+        const label = (labelRaw || targetRaw).trim();
+        const targetPage = resolvePageByTitle(target);
+        if (!targetPage) {
+          return `<span class="missing-link" title="Missing page: ${escapeHtml(target)}">${escapeHtml(label)}</span>`;
+        }
+        const href = encodeHash(targetPage.file);
+        return `<a class="wiki-link" href="${href}" data-wiki-file="${escapeHtml(targetPage.file)}">${escapeHtml(label)}</a>`;
+      });
+    }
+
+    function resolvePageByTitle(name) {
+      const query = name.toLowerCase().trim();
+      const exact = state.pages.find(p => p.file.toLowerCase() === query || p.title.toLowerCase() === query);
+      if (exact) return exact;
+
+      const cleaned = query.replace(/\s+/g, ' ');
+      return state.pages.find(p => {
+        const title = p.title.toLowerCase();
+        const file = p.file.toLowerCase();
+        return title === cleaned || title.includes(cleaned) || file.includes(cleaned.replace(/\s+/g, '_'));
+      }) || null;
+    }
+
+    function rewriteMarkdownLinks(html) {
+      const container = document.createElement('div');
+      container.innerHTML = html;
+
+      container.querySelectorAll('a[href]').forEach(a => {
+        const href = a.getAttribute('href') || '';
+        if (/^https?:\/\//i.test(href) || href.startsWith('mailto:') || href.startsWith('#')) return;
+
+        const cleanHref = href.split('#')[0];
+        if (/\.md$/i.test(cleanHref)) {
+          const file = cleanHref.replace(/^\.\//, '');
+          a.setAttribute('href', encodeHash(file));
+          a.setAttribute('data-wiki-file', file);
+          a.classList.add('wiki-link');
+        }
+      });
+
+      container.querySelectorAll('img[src]').forEach(img => {
+        const src = img.getAttribute('src') || '';
+        if (!/^https?:\/\//i.test(src) && !src.startsWith('data:')) {
+          img.setAttribute('loading', 'lazy');
+        }
+      });
+
+      return container.innerHTML;
+    }
+
+    function collectWikiLinks(html) {
+      const container = document.createElement('div');
+      container.innerHTML = html;
+      return [...container.querySelectorAll('a[data-wiki-file]')]
+        .map(a => a.dataset.wikiFile)
+        .filter(Boolean);
+    }
+
+    function generateToc(headings) {
+      els.toc.innerHTML = '';
+      if (!headings.length) {
+        els.toc.innerHTML = '<div class="empty">No headings on this page.</div>';
+        return;
+      }
+
+      headings.forEach(h => {
+        const btn = document.createElement('button');
+        btn.className = `level-${h.level}`;
+        btn.textContent = h.text;
+        btn.addEventListener('click', () => {
+          const target = document.getElementById(h.id);
+          target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+        els.toc.appendChild(btn);
+      });
+    }
+
+    function generateBacklinks(file) {
+      const backlinks = state.pages
+        .filter(p => p.file !== file && p.links.includes(file))
+        .map(p => p.file)
+        .sort((a, b) => pageNumber(a) - pageNumber(b) || a.localeCompare(b));
+
+      els.backlinks.innerHTML = '';
+      if (!backlinks.length) {
+        els.backlinks.innerHTML = '<div class="empty">Nothing links here yet.</div>';
+        return;
+      }
+
+      for (const ref of backlinks) {
+        const p = state.pageMap.get(ref);
+        const btn = document.createElement('button');
+        btn.textContent = p ? p.title : fileToTitle(ref);
+        btn.addEventListener('click', () => {
+          location.hash = encodeURIComponent(ref);
+        });
+        els.backlinks.appendChild(btn);
+      }
+    }
+
+    async function fetchPage(file) {
+      const res = await fetch(file, { cache: 'no-cache' });
+      if (!res.ok) throw new Error(`Failed to load ${file} (${res.status})`);
+      return await res.text();
+    }
+
+    function setLoading(isLoading) {
+      els.article.classList.toggle('loading', isLoading);
+    }
+
+    async function renderPage(file) {
+      const page = state.pageMap.get(file);
+      if (!page) return;
+
+      setLoading(true);
+      els.pageTitle.textContent = page.title;
+      els.pageFile.textContent = page.file;
+      els.pageCount.textContent = `${state.pages.length} pages`;
+      els.articleContent.innerHTML = '<div class="skeleton"><div class="skeleton-line" style="width: 58%"></div><div class="skeleton-line" style="width: 88%"></div><div class="skeleton-line" style="width: 74%"></div><div class="skeleton-line" style="width: 96%"></div></div>';
+      document.title = `${page.title} · Dev Wiki`;
+
+      try {
+        let md = page.content;
+        md = resolveWikiLinks(md, file);
+        let html = marked.parse(md);
+        html = rewriteMarkdownLinks(html);
+
+        const extracted = extractHeadingsFromHtml(html);
+        const wrapper = document.createElement('div');
+        wrapper.className = 'article-content';
+        wrapper.innerHTML = extracted.html;
+
+        els.articleContent.innerHTML = '';
+        els.articleContent.appendChild(wrapper);
+
+        const links = collectWikiLinks(wrapper.innerHTML);
+        page.links = [...new Set(links)];
+        generateToc(extracted.headings);
+        generateBacklinks(file);
+        state.activeFile = file;
+        setActiveSidebarItem(file);
+        showStatus(`Loaded ${page.title}`);
+      } catch (err) {
+        els.articleContent.innerHTML = `<div class="error"><strong>Could not render page.</strong><br>${escapeHtml(String(err.message || err))}</div>`;
+        els.toc.innerHTML = '<div class="empty">No table of contents.</div>';
+        els.backlinks.innerHTML = '<div class="empty">No backlinks.</div>';
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function loadIndex() {
+      const res = await fetch('index.json', { cache: 'no-cache' });
+      if (!res.ok) throw new Error('index.json not found');
+      const files = await res.json();
+      if (!Array.isArray(files)) throw new Error('index.json must contain an array of markdown filenames');
+
+      state.files = files
+        .filter(f => typeof f === 'string' && f.toLowerCase().endsWith('.md'))
+        .sort((a, b) => pageNumber(a) - pageNumber(b) || a.localeCompare(b));
+
+      state.pages = [];
+      state.pageMap = new Map();
+
+      for (const file of state.files) {
+        try {
+          const content = await fetchPage(file);
+          const page = {
+            file,
+            title: fileToTitle(file),
+            number: pageNumber(file),
+            section: sectionName(pageNumber(file)),
+            content,
+            links: []
+          };
+          state.pages.push(page);
+          state.pageMap.set(file, page);
+        } catch (err) {
+          const page = {
+            file,
+            title: fileToTitle(file),
+            number: pageNumber(file),
+            section: sectionName(pageNumber(file)),
+            content: `# ${fileToTitle(file)}\n\n> Failed to load this page.\n`,
+            links: []
+          };
+          state.pages.push(page);
+          state.pageMap.set(file, page);
+        }
+      }
+
+      // Fill link graph from loaded content before first render.
+      for (const page of state.pages) {
+        const links = [];
+        const wikilinks = [...page.content.matchAll(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g)].map(m => m[1].trim());
+        for (const target of wikilinks) {
+          const targetPage = resolvePageByTitle(target);
+          if (targetPage) links.push(targetPage.file);
+        }
+
+        const mdLinks = [...page.content.matchAll(/\[[^\]]*\]\(([^)]+\.md)(?:#[^)]+)?\)/gi)].map(m => m[1].replace(/^\.\//, ''));
+        for (const target of mdLinks) links.push(target);
+
+        page.links = [...new Set(links)];
+      }
+
+      renderSidebar(state.files, state.searchQuery);
+      els.pageCount.textContent = `${state.pages.length} pages`;
+
+      const initial = decodeHash() && state.pageMap.has(decodeHash()) ? decodeHash() : state.files[0];
+      if (initial) {
+        location.hash = encodeURIComponent(initial);
+        await renderPage(initial);
+      }
+    }
+
+    function applySearch() {
+      state.searchQuery = els.search.value;
+      renderSidebar(state.files, state.searchQuery);
+      if (state.searchQuery.trim()) {
+        showStatus(`Searching “${state.searchQuery.trim()}”`);
+      }
+    }
+
+    function toggleSidebarSections() {
+      const all = document.querySelectorAll('.section');
+      state.sidebarCollapsedSections = !state.sidebarCollapsedSections;
+      all.forEach(section => {
+        const title = section.querySelector('.section-title');
+        const children = [...section.children].slice(1);
+        children.forEach(el => {
+          el.style.display = state.sidebarCollapsedSections ? 'none' : '';
+        });
+        if (title) title.style.cursor = 'pointer';
+      });
+      showStatus(state.sidebarCollapsedSections ? 'Sections collapsed' : 'Sections expanded');
+    }
+
+    els.search.addEventListener('input', applySearch);
+    els.clearSearch.addEventListener('click', () => {
+      els.search.value = '';
+      state.searchQuery = '';
+      renderSidebar(state.files, '');
+      els.search.focus();
+      showStatus('Search cleared');
+    });
+
+    els.openHome.addEventListener('click', () => {
+      const home = state.files[0];
+      if (home) {
+        location.hash = encodeURIComponent(home);
+        closeSidebar();
+      }
+    });
+
+    els.toggleSections.addEventListener('click', toggleSidebarSections);
+
+    els.menuBtn.addEventListener('click', openSidebar);
+    els.overlay.addEventListener('click', closeSidebar);
+
+    window.addEventListener('hashchange', async () => {
+      const file = decodeHash();
+      if (!file || !state.pageMap.has(file)) return;
+      await renderPage(file);
+      if (window.innerWidth <= 860) closeSidebar();
+    });
+
+    document.addEventListener('click', (event) => {
+      const link = event.target.closest('a[data-wiki-file]');
+      if (!link) return;
+      const file = link.dataset.wikiFile;
+      if (file && state.pageMap.has(file)) {
+        event.preventDefault();
+        location.hash = encodeURIComponent(file);
+      }
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === '/' && document.activeElement !== els.search) {
+        event.preventDefault();
+        els.search.focus();
+      }
+      if (event.key === 'Escape') {
+        if (els.search.value) {
+          els.search.value = '';
+          state.searchQuery = '';
+          renderSidebar(state.files, '');
+          showStatus('Search cleared');
+        } else {
+          closeSidebar();
+        }
+      }
+    });
+
+    (async function init() {
+      try {
+        await loadIndex();
+      } catch (err) {
+        els.pageTitle.textContent = 'Dev Wiki';
+        els.pageFile.textContent = 'index.json missing';
+        els.pageCount.textContent = '0 pages';
+        els.articleContent.innerHTML = `
+          <div class="error">
+            <strong>Could not load the wiki.</strong><br>
+            This app expects an <code>index.json</code> file in the same folder as the HTML file.
+            It should contain an array of markdown filenames.
+          </div>
+          <p>Example:</p>
+          <pre><code>["1_Overview.md", "2_Getting_Started.md", "3_Key_Features.md"]</code></pre>
+        `;
+        els.sidebarSections.innerHTML = '<div class="search-empty">Add index.json and markdown files, then refresh.</div>';
+        showStatus('Waiting for index.json');
+      }
+    })();
+  </script>
+</body>
+</html>
