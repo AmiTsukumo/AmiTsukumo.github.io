@@ -686,7 +686,8 @@
       pageMap: new Map(),
       activeFile: null,
       sidebarCollapsedSections: false,
-      searchQuery: ''
+      searchQuery: '',
+      pendingAnchor: null
     };
 
     const els = {
@@ -774,6 +775,15 @@
       document.querySelectorAll('.page-link').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.file === file);
       });
+    }
+
+    function scrollToAnchor(anchor) {
+      if (!anchor) return;
+      const decoded = decodeURIComponent(anchor);
+      const target = document.getElementById(decoded) || document.querySelector(`[id="${CSS.escape(decoded)}"]`);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
 
     function openSidebar() {
@@ -919,11 +929,12 @@
         const href = a.getAttribute('href') || '';
         if (/^https?:\/\//i.test(href) || href.startsWith('mailto:') || href.startsWith('#')) return;
 
-        const cleanHref = href.split('#')[0];
-        if (/\.md$/i.test(cleanHref)) {
-          const file = cleanHref.replace(/^\.\//, '');
+        const [rawPath, rawAnchor] = href.split('#');
+        if (/\.md$/i.test(rawPath)) {
+          const file = rawPath.replace(/^\.\//, '');
           a.setAttribute('href', encodeHash(file));
           a.setAttribute('data-wiki-file', file);
+          if (rawAnchor) a.setAttribute('data-wiki-anchor', decodeURIComponent(rawAnchor));
           a.classList.add('wiki-link');
         }
       });
@@ -1030,6 +1041,12 @@
         state.activeFile = file;
         setActiveSidebarItem(file);
         showStatus(`Loaded ${page.title}`);
+
+        const pendingAnchor = state.pendingAnchor;
+        state.pendingAnchor = null;
+        if (pendingAnchor) {
+          window.requestAnimationFrame(() => scrollToAnchor(pendingAnchor));
+        }
       } catch (err) {
         els.articleContent.innerHTML = `<div class="error"><strong>Could not render page.</strong><br>${escapeHtml(String(err.message || err))}</div>`;
         els.toc.innerHTML = '<div class="empty">No table of contents.</div>';
@@ -1161,7 +1178,12 @@
       const file = link.dataset.wikiFile;
       if (file && state.pageMap.has(file)) {
         event.preventDefault();
-        location.hash = encodeURIComponent(file);
+        state.pendingAnchor = link.dataset.wikiAnchor || null;
+        if (state.activeFile === file) {
+          renderPage(file);
+        } else {
+          location.hash = encodeURIComponent(file);
+        }
       }
     });
 
